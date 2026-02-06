@@ -429,7 +429,12 @@ export class ActionRunner {
       }
 
       // Ensure directory exists
-      const dir = path.split('/').slice(0, -1).join('/');
+      let finalPath = path;
+      // Flatten nested src/src or public/public paths often created by AI hallucinations
+      if (finalPath.startsWith('src/src/')) finalPath = finalPath.replace('src/src/', 'src/');
+      if (finalPath.startsWith('public/public/')) finalPath = finalPath.replace('public/public/', 'public/');
+
+      const dir = finalPath.split('/').slice(0, -1).join('/');
       if (dir) {
         try {
           await this.webcontainer.fs.mkdir(dir, { recursive: true });
@@ -439,7 +444,7 @@ export class ActionRunner {
         }
       }
 
-      await this.webcontainer.fs.writeFile(path, content);
+      await this.webcontainer.fs.writeFile(finalPath, content);
       this.updateStatus(actionId, 'complete');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
