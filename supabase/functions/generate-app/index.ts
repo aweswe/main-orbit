@@ -107,6 +107,7 @@ CRITICAL ORDER (LEVEL 0):
 
 RULES:
 - MANDATORY: You MUST generate a root index.html file. If missing, the app will 404.
+- TSCONFIG MANDATORY: You MUST generate a tsconfig.json in the root with {"compilerOptions": {"jsx": "react-jsx"}}. This is critical for React 18+.
 - DATA-FIRST RENDERING: Ensure the initial state/data (at least 6 items) is rendered SYNCHRONOUSLY. Do not wait for scroll events or complex hooks for the initial view.
 - COMPONENT INTEGRATION: Every file you generate in the components folder MUST be imported and used in a Page or the main App.tsx. No "dead" files.
 - STYLING: Use Tailwind CSS ONLY. Ensure the index.html includes the link to the main css file.

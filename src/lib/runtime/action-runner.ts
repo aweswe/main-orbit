@@ -428,6 +428,41 @@ export class ActionRunner {
         }
       }
 
+      // Config Guard: Ensure tsconfig.json has react-jsx transform
+      if (path === 'tsconfig.json') {
+        try {
+          const config = JSON.parse(content);
+          config.compilerOptions = config.compilerOptions || {};
+          if (config.compilerOptions.jsx !== 'react-jsx') {
+            config.compilerOptions.jsx = 'react-jsx';
+            content = JSON.stringify(config, null, 2);
+            this.callbacks.onOutput?.('🛡️ [Config Guard] Enforced react-jsx in tsconfig.json\n');
+          }
+        } catch (e) {
+          // If JSON is invalid, inject a decent default for React 18
+          content = JSON.stringify({
+            compilerOptions: {
+              target: "ESNext",
+              lib: ["DOM", "DOM.Iterable", "ESNext"],
+              allowJs: true,
+              skipLibCheck: true,
+              esModuleInterop: true,
+              allowSyntheticDefaultImports: true,
+              strict: true,
+              forceConsistentCasingInFileNames: true,
+              module: "ESNext",
+              moduleResolution: "Node",
+              resolveJsonModule: true,
+              isolatedModules: true,
+              noEmit: true,
+              jsx: "react-jsx"
+            },
+            include: ["src"]
+          }, null, 2);
+          this.callbacks.onOutput?.('🛡️ [Config Guard] Injected default tsconfig.json for React 18+ compatibility\n');
+        }
+      }
+
       // Ensure directory exists
       let finalPath = path;
       // Flatten nested src/src or public/public paths often created by AI hallucinations
