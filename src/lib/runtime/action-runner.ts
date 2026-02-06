@@ -479,6 +479,57 @@ export class ActionRunner {
         }
       }
 
+      // CSS Guard: Ensure @import statements are at the absolute top and NO circularity
+      if (path.endsWith('.css')) {
+        const lines = content.split('\n');
+        const imports: string[] = [];
+        const rest: string[] = [];
+
+        // Simple regex to find the selector in a line like ".font-heading {"
+        let currentSelector = '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+
+          // Track current selector
+          if (trimmed.endsWith('{')) {
+            currentSelector = trimmed.replace('{', '').trim();
+          } else if (trimmed === '}') {
+            currentSelector = '';
+          }
+
+          if (trimmed.startsWith('@import ')) {
+            imports.push(line);
+          } else if (trimmed.startsWith('@apply ')) {
+            // Circularity Check: e.g., ".font-heading { @apply font-heading; }"
+            const applyTarget = trimmed.replace('@apply ', '').replace(';', '').trim();
+            if (currentSelector && currentSelector.includes(applyTarget)) {
+              this.callbacks.onOutput?.(`🛡️ [CSS Guard] Removed circular @apply rule in ${currentSelector}\n`);
+              continue; // Skip the circular rule
+            }
+            rest.push(line);
+          } else {
+            rest.push(line);
+          }
+        }
+
+        if (imports.length > 0) {
+          content = [...imports, ...rest].join('\n');
+          this.callbacks.onOutput?.('🛡️ [CSS Guard] Moved @import statements to the top of the file\n');
+        } else {
+          content = rest.join('\n');
+        }
+      }
+
+      // Path Guard: Fix deep relative path hallucinations (e.g., ../../../utils/cn -> @/utils/cn)
+      if (path.endsWith('.tsx') || path.endsWith('.ts')) {
+        const deepRelativeRegex = /from\s+['"](\.\.\/)+utils\/cn['"]/g;
+        if (deepRelativeRegex.test(content)) {
+          content = content.replace(deepRelativeRegex, "from '@/utils/cn'");
+          this.callbacks.onOutput?.(`🛡️ [Path Guard] Normalized utility imports in ${path}\n`);
+        }
+      }
+
       await this.webcontainer.fs.writeFile(finalPath, content);
       this.updateStatus(actionId, 'complete');
     } catch (error) {

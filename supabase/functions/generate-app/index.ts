@@ -111,6 +111,9 @@ RULES:
 - DATA-FIRST RENDERING: Ensure the initial state/data (at least 6 items) is rendered SYNCHRONOUSLY. Do not wait for scroll events or complex hooks for the initial view.
 - COMPONENT INTEGRATION: Every file you generate in the components folder MUST be imported and used in a Page or the main App.tsx. No "dead" files.
 - STYLING: Use Tailwind CSS ONLY. Ensure the index.html includes the link to the main css file.
+- CSS IMPORTS: All @import statements (e.g., for Google Fonts) MUST be at the very top of the .css file, before any other rules or comments.
+- NO CSS CIRCULARITY: DO NOT @apply a class to itself (e.g., .font-heading { @apply font-heading; } is FORBIDDEN).
+- IMPORT ALIASES: ALWAYS use the "@/ " alias for all internal imports (e.g., "@/utils/cn", "@/components/Button"). NEVER use deep relative paths like "../../../utils/cn".
 - Put ALL dependencies in package.json before npm install
 - File content must be COMPLETE - no placeholders or "// rest of code..."
 - Use 2 spaces for indentation
