@@ -1,0 +1,17 @@
+/* Global overrides for Sandpack - must override inline styles */
+.sp-wrapper,
+.sp-layout,
+.sp-stack,
+.sp-preview,
+.sp-preview-container,
+.sp-preview-iframe {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    flex: 1 1 0% !important;
+}
+
+.sp-preview-iframe iframe {
+    height: 100% !important;
+    min-height: 100% !important;
+}
